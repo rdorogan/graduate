@@ -1,0 +1,30 @@
+node{
+    
+    stage('Git Clone') {
+        
+        git 'https://github.com/MarilenaIstrate/simple-java-maven-app'
+    }
+    
+    stage('Build the app') {
+        
+        def mvnHome = tool name: 'maven-3', type: 'maven'
+        def mvnCMD = "${mvnHome}/bin/mvn"
+        sh "${mvnCMD} clean package"
+    }
+    
+    stage('Build Docker Image'){
+        
+        sh 'touch /var/lib/jenkins/workspace/my_job/Dockerfile'
+        sh 'true > /var/lib/jenkins/workspace/my_job/Dockerfile'
+        sh 'echo "FROM tomcat:8" >> /var/lib/jenkins/workspace/my_job/Dockerfile'
+        sh 'echo "COPY ./target/my-app-1.0-SNAPSHOT.jar /usr/local/tomcat/webapps" >> /var/lib/jenkins/workspace/my_job/Dockerfile'
+        sh 'docker build -t rdorogan/my-app:2.0.0 .'
+    }
+    
+    stage('Push Docker Image'){
+        
+        sh 'docker login -u rdorogan -p parolaendava1'
+        sh 'docker push rdorogan/my-app:2.0.0'
+    }
+    
+}
